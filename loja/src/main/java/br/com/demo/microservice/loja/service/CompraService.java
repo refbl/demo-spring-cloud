@@ -5,6 +5,8 @@ import br.com.demo.microservice.loja.controller.dto.CompraDto;
 import br.com.demo.microservice.loja.controller.dto.InfoFornecedorDto;
 import br.com.demo.microservice.loja.controller.dto.InfoPedidoDto;
 import br.com.demo.microservice.loja.model.Compra;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -26,12 +28,18 @@ public class CompraService {
     @Autowired
     private FornecedorClient fornecedorClient;
 
+    @Autowired
+    private static final Logger log = LoggerFactory.getLogger(CompraService.class);
+
 
     public Compra realizaCompra(CompraDto compraDto){
 
+        final String estado = compraDto.getEndereco().getEstado();
 
-        InfoFornecedorDto infoPorEstado = fornecedorClient.getInfoPorEstado(compraDto.getEndereco().getEstado());
+        log.info("Buscando as Informacoes do Fornecedor de {}" , estado);
+        InfoFornecedorDto infoPorEstado = fornecedorClient.getInfoPorEstado(estado);
 
+        log.info("Realizando Pedido de {}", estado);
         InfoPedidoDto infoPedido = fornecedorClient.realizaPedido(compraDto.getItens());
 
         if (infoPorEstado != null) {
